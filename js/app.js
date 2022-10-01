@@ -79,6 +79,7 @@ class UI {
         this.itemID++;
         this.itemList.push(expense);
         this.addExpense(expense);
+        this.showBalance();
       }
     }
 
@@ -107,10 +108,54 @@ class UI {
 
     //total expense
     totalExpense() {
-      let total = 400;
+      let total = 0;
+      if(this.itemList.length > 0) {
+        total = this.itemList.reduce(function(acc, curr) {
+          acc += curr.amount;
+          return acc;
+        }, 0)
+      }
+      this.expenseAmount.textContent = total;
       return total;
     }
+
+    //Edit Expense
+    editExpense(element) {
+      let id = parseInt(element.dataset.id);
+      let parent = element.parentElement.parentElement.parentElement;
+      // remove from DOM
+      this.expenseList.removeChild(parent);
+      // remove from list
+      let expense = this.itemList.filter(function(item) {
+        return item.id === id;
+      })
+      //show value
+      this.expenseInput.value = expense[0].title;
+      this.amountInput.value = expense[0].amount;
+
+      let tempList = this.itemList.filter(function(item) {
+        return item.id !== id;
+      })
+
+      this.itemList = tempList;
+      this.showBalance();
+    }
+
+    //delete expense
+    deleteExpense(element) {
+      let id = parseInt(element.dataset.id);
+      let parent = element.parentElement.parentElement.parentElement;
+      this.expenseList.removeChild(parent);
+
+      //remove from list
+      let tempList = this.itemList.filter(function(item) {
+        return item.id !== id;
+      });
+      this.itemList = tempList;
+      this.showBalance();
+    }
   }
+
   
 function eventListeners() {
 const budgetForm = document.getElementById('budget-form');
@@ -134,7 +179,11 @@ expenseForm.addEventListener('submit', function(event){
 
 // expense list click
 expenseList.addEventListener('click', function(event){
-  event.preventDefault();
+  if(event.target.parentElement.classList.contains('edit-icon')) {
+    ui.editExpense(event.target.parentElement);
+  } else if(event.target.parentElement.classList.contains('delete-icon')) {
+    ui.deleteExpense(event.target.parentElement);
+  }
 })
 }
 
